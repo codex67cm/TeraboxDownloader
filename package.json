@@ -1,0 +1,50 @@
+{
+  "name": "terabox-gui",
+  "version": "1.0.0",
+  "description": "A clean and modern GUI downloader for Terabox - by codex67_cm",
+  "author": "codex67_cm",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.0",
+    "playwright": "^1.54.1"
+  },
+  "devDependencies": {
+    "electron": "^37.2.4",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.codex67.teraboxgui",
+    "productName": "TeraDownload",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!downloads/**",
+      "!node_modules/.cache",
+      "!*.log",
+      "!*.md",
+      "!links.txt",
+      "!README*"
+    ],
+    "extraResources": [],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TeraDownload"
+    }
+  }
+}

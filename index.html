@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Terabox Downloader</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="title-bar">
+    <div class="title">📥 Terabox Downloader</div>
+    <div class="window-controls">
+      <button id="minimize">🗕</button>
+      <button id="maximize">🗖</button>
+      <button id="close">✖</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Terabox Auto Downloader</h1>
+
+    <div class="file-selector">
+      <button id="browseBtn">📂 Choose links.txt</button>
+      <span id="filePath">No file selected</span>
+    </div>
+
+    <div class="action-buttons">
+      <button id="startBtn">▶️ Start</button>
+      <button id="stopBtn">⛔ Stop</button>
+      <button id="skipBtn">⏭️ Skip</button>
+    </div>
+
+    <div id="logBox" class="log"></div>
+  </div>
+
+  <div class="footer">Made by codex67_cm</div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

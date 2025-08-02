@@ -1,0 +1,188 @@
+/* === Global Style === */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: "Segoe UI", "Fira Code", sans-serif;
+  overflow: hidden;
+}
+
+/* === Title Bar === */
+.title-bar {
+  height: 32px;
+  background: #1e1e1e;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  -webkit-app-region: drag;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.window-controls button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 6px;
+  transition: background 0.2s;
+}
+
+.window-controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* === Main Container === */
+.container {
+  max-width: 720px;
+  margin: 30px auto 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* === Header === */
+h1 {
+  font-size: 1.9em;
+  margin-bottom: 25px;
+  color: #00bcd4;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+#startBtn,
+#stopBtn {
+  font-size: 15px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#startBtn {
+  background: linear-gradient(45deg, #4caf50, #388e3c);
+  color: white;
+}
+
+#startBtn:hover {
+  background: linear-gradient(45deg, #66bb6a, #2e7d32);
+}
+
+#stopBtn {
+  background: linear-gradient(45deg, #ff1744, #d50000);
+  color: white;
+}
+
+#stopBtn:hover {
+  background: linear-gradient(45deg, #ff5252, #c62828);
+}
+
+/* === Log Box === */
+.log {
+  background-color: #1a1a1a;
+  margin-top: 25px;
+  padding: 18px 20px;
+  border-radius: 10px;
+  height: 320px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  text-align: left;
+  white-space: pre-wrap;
+  font-family: "Fira Code", monospace;
+  color: #d4d4d4;
+  box-shadow: inset 0 0 10px #00000055;
+  border: 1px solid #333;
+  scrollbar-width: none; /* Firefox */
+}
+
+/* === Remove scrollbars in Chrome/Edge/Safari === */
+.log::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
+  background: #121212;
+  padding: 10px 0;
+  border-top: 1px solid #2a2a2a;
+  font-family: "Segoe UI", sans-serif;
+  opacity: 0.8;
+}
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .log {
+    height: 250px;
+    font-size: 0.85em;
+  }
+
+  h1 {
+    font-size: 1.4em;
+  }
+
+  button#startBtn {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+}
+.file-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  background-color: #1f1f1f;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: "Fira Code", monospace;
+}
+
+#filePath {
+  color: #ccc;
+  font-size: 0.9rem;
+  overflow-wrap: break-word;
+  max-width: 600px;
+}
+.action-buttons button {
+  background-color: #1e1e1e;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  font-size: 16px;
+  font-family: 'Fira Code', monospace;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.action-buttons button:hover {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+.action-buttons button:active {
+  background-color: #555;
+  transform: translateY(1px);
+}
