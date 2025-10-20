@@ -11,7 +11,7 @@ const {
 const path = require("path");
 
 let tray = null;
-let win, splash;
+let win;
 const { runDownloader, stopDownload, skipDownload } = require("./downloader");
 
 process.on("unhandledRejection", (error) => {
@@ -20,18 +20,6 @@ process.on("unhandledRejection", (error) => {
 
 function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
-  splash = new BrowserWindow({
-    width: 400,
-    height: 250,
-    transparent: true,
-    frame: false,
-    alwaysOnTop: true,
-    resizable: false,
-    show: true,
-  });
-
-  splash.loadFile("splash.html");
 
   win = new BrowserWindow({
     width: Math.min(1000, width - 100),
@@ -54,10 +42,7 @@ function createWindow() {
   });
 
   win.once("ready-to-show", () => {
-    setTimeout(() => {
-      splash.close();
-      win.show();
-    }, 2200);
+    win.show(); // show immediately, no splash delay
   });
 }
 
