@@ -51,7 +51,7 @@ async function runDownloader(linksPath, log) {
 
       const browser = await chromium.launch({
         executablePath: bravePath,
-        headless: false,
+        headless: true,
         downloadsPath: downloadDir,
         args: ["--window-size=1280,800"],
       });
