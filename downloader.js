@@ -4,11 +4,7 @@ const { chromium } = require("playwright");
 
 const bravePath =
   "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe";
-const downloadDir = path.join(
-  require("os").homedir(),
-  "Documents",
-  "TeraDownload"
-);
+const downloadDir = path.join(require("os").homedir(), "Documents", "TeraDownload");
 
 fs.ensureDirSync(downloadDir);
 
@@ -26,6 +22,18 @@ function skipDownload() {
 function logHeader(title, log) {
   const line = "═".repeat(title.length + 4);
   log(`\n${line}\n  ${title}\n${line}`);
+}
+
+async function waitAndClick(page, selector, label, timeout = 15000) {
+  try {
+    const el = await page.waitForSelector(selector, { timeout });
+    await el.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await el.click();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function runDownloader(linksPath, log) {
@@ -51,7 +59,7 @@ async function runDownloader(linksPath, log) {
 
       const browser = await chromium.launch({
         executablePath: bravePath,
-        headless: true,
+        headless: false,
         downloadsPath: downloadDir,
         args: ["--window-size=1280,800"],
       });
@@ -67,23 +75,18 @@ async function runDownloader(linksPath, log) {
         await page.goto("https://teraboxdl.site/");
         log("🌐 Opened teraboxdl.site");
 
-        // Handle cookie popup if it appears
+        // Handle cookie popup if present
         try {
-          const acceptBtn = await page.waitForSelector(
-            'button:has-text("Accept All")',
-            { timeout: 5000 }
-          );
+          const acceptBtn = await page.waitForSelector('button:has-text("Accept All")', { timeout: 5000 });
           await acceptBtn.click();
           log("🍪 Cookie popup accepted.");
         } catch {
           log("👍 No cookie popup or already accepted.");
         }
 
-        // Paste the Terabox link
+        // Fill link input
         try {
-          await page.waitForSelector('input[placeholder*="Terabox"]', {
-            timeout: 8000,
-          });
+          await page.waitForSelector('input[placeholder*="Terabox"]', { timeout: 8000 });
           await page.fill('input[placeholder*="Terabox"]', link);
           log("📋 Pasted link into input.");
         } catch {
@@ -96,97 +99,94 @@ async function runDownloader(linksPath, log) {
           }
         }
 
-        // Click "Download & Stream" button
-        try {
-          const streamBtn = await page.waitForSelector(
-            'button:has-text("Download & Stream")',
-            { timeout: 15000 }
-          );
-          await streamBtn.click();
-          log("🎬 Clicked 'Download & Stream' button...");
-        } catch {
+        // Click "Download & Stream"
+        if (!(await waitAndClick(page, 'button:has-text("Download & Stream")', "Download & Stream", 20000))) {
           log("⚠️ 'Download & Stream' button not found, skipping...");
           await browser.close();
           continue;
         }
+        log("🎬 Clicked 'Download & Stream' button...");
 
-        // Step 1: Click the play button
-        try {
-          const playBtn = await page.waitForSelector("svg.lucide-play", {
-            timeout: 20000,
-          });
-          await playBtn.click();
-          log("▶️ Clicked play button to load download page...");
+        // Wait for play button (robust detection)
+        log("⏳ Waiting for play button...");
+        const playBtnSelector =
+          'button:has(svg.lucide-play), svg.lucide-play';
+        let playFound = false;
+
+        for (let attempt = 0; attempt < 5; attempt++) {
+          if (await page.$(playBtnSelector)) {
+            playFound = true;
+            break;
+          }
           await page.waitForTimeout(2000);
-        } catch {
-          log("⚠️ Play button not found, skipping...");
+        }
+
+        if (!playFound) {
+          log("⚠️ Play button did not appear, skipping...");
           await browser.close();
           continue;
         }
 
-        // Step 2: Click the final "Download Video" button
-        try {
-          const finalDownloadBtn = await page.waitForSelector(
-            'button:has-text("Download Video")',
-            { timeout: 30000 }
-          );
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await page.waitForTimeout(500);
+        await page.click(playBtnSelector);
+        log("▶️ Clicked play button, loading download page...");
 
-          await finalDownloadBtn.scrollIntoViewIfNeeded();
-          await page.waitForTimeout(500);
+        // Wait for final download button
+        log("⏳ Waiting for final 'Download Video' button...");
+        const finalDownloadBtn = await page.waitForSelector('button:has-text("Download Video")', {
+          timeout: 40000,
+        });
 
-          if (shouldSkip) {
-            log("⏭️ Skipped before clicking final download.");
-            shouldSkip = false;
-            await context.close();
-            await browser.close();
-            continue;
-          }
+        await finalDownloadBtn.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(500);
 
-          const [download] = await Promise.all([
-            page.waitForEvent("download", { timeout: 60000 }),
-            finalDownloadBtn.click(),
-          ]);
-
-          log("⬇️ Final download started...");
-
-          if (shouldSkip) {
-            log("⏭️ Skipping active download...");
-            shouldSkip = false;
-            await context.close();
-            await browser.close();
-            continue;
-          }
-
-          // Get temp download path
-          const tempPath = await download.path();
-          const stat = await fs.stat(tempPath);
-          const fileSizeMB = stat.size / (1024 * 1024);
-
-          if (fileSizeMB > 100) {
-            log(`⚠️ File too large (${fileSizeMB.toFixed(2)} MB), skipping.`);
-            await fs.remove(tempPath); // delete temp file
-            await browser.close();
-            continue;
-          }
-
-          // Save final file
-          const baseName = `vid${i + 1}.mp4`;
-          const targetPath = path.join(downloadDir, baseName);
-          await download.saveAs(targetPath);
-          log(`✅ Downloaded as ${baseName}`);
-
-          // Delete temp file after saving (Playwright should clean up, but extra safety)
-          try {
-            if (fs.existsSync(tempPath)) await fs.remove(tempPath);
-          } catch (e) {
-            log(`⚠️ Failed to delete temp file: ${e.message}`);
-          }
-
+        if (shouldSkip) {
+          log("⏭️ Skipped before clicking final download.");
+          shouldSkip = false;
+          await context.close();
           await browser.close();
-        } catch (err) {
-          log(`❌ Error clicking final download: ${err.message}`);
-          await browser.close();
+          continue;
         }
+
+        const [download] = await Promise.all([
+          page.waitForEvent("download", { timeout: 60000 }),
+          finalDownloadBtn.click(),
+        ]);
+
+        log("⬇️ Final download started...");
+
+        if (shouldSkip) {
+          log("⏭️ Skipping active download...");
+          shouldSkip = false;
+          await context.close();
+          await browser.close();
+          continue;
+        }
+
+        const tempPath = await download.path();
+        const stat = await fs.stat(tempPath);
+        const fileSizeMB = stat.size / (1024 * 1024);
+
+        if (fileSizeMB > 100) {
+          log(`⚠️ File too large (${fileSizeMB.toFixed(2)} MB), skipping.`);
+          await fs.remove(tempPath);
+          await browser.close();
+          continue;
+        }
+
+        const baseName = `vid${i + 1}.mp4`;
+        const targetPath = path.join(downloadDir, baseName);
+        await download.saveAs(targetPath);
+        log(`✅ Downloaded as ${baseName}`);
+
+        try {
+          if (fs.existsSync(tempPath)) await fs.remove(tempPath);
+        } catch (e) {
+          log(`⚠️ Failed to delete temp file: ${e.message}`);
+        }
+
+        await browser.close();
       } catch (err) {
         log(`❌ Error: ${err.message}`);
         await browser.close();
@@ -199,8 +199,4 @@ async function runDownloader(linksPath, log) {
   }
 }
 
-module.exports = {
-  runDownloader,
-  stopDownload,
-  skipDownload,
-};
+module.exports = { runDownloader, stopDownload, skipDownload };
