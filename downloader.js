@@ -107,30 +107,35 @@ async function runDownloader(linksPath, log) {
         }
         log("🎬 Clicked 'Download & Stream' button...");
 
-        // Wait for play button (robust detection)
+        // Wait for play button (improved)
         log("⏳ Waiting for play button...");
-        const playBtnSelector =
-          'button:has(svg.lucide-play), svg.lucide-play';
-        let playFound = false;
+        let playBtn = null;
 
-        for (let attempt = 0; attempt < 5; attempt++) {
-          if (await page.$(playBtnSelector)) {
-            playFound = true;
-            break;
-          }
+        for (let attempt = 1; attempt <= 10; attempt++) {
+          playBtn = await page.$('svg.lucide-play');
+          if (playBtn) break;
+          log(`⌛ Waiting... attempt ${attempt}/10`);
           await page.waitForTimeout(2000);
         }
 
-        if (!playFound) {
-          log("⚠️ Play button did not appear, skipping...");
+        if (!playBtn) {
+          log("⚠️ Play button not detected, skipping this link.");
           await browser.close();
           continue;
         }
 
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await page.waitForTimeout(500);
-        await page.click(playBtnSelector);
-        log("▶️ Clicked play button, loading download page...");
+        // Try clicking parent element if SVG alone isn't clickable
+        try {
+          const parent = await playBtn.evaluateHandle(el => el.closest("button, div, span") || el);
+          await parent.scrollIntoViewIfNeeded();
+          await page.waitForTimeout(500);
+          await parent.click();
+          log("▶️ Clicked play button successfully!");
+        } catch (err) {
+          log(`⚠️ Could not click play button: ${err.message}`);
+          await browser.close();
+          continue;
+        }
 
         // Wait for final download button
         log("⏳ Waiting for final 'Download Video' button...");
