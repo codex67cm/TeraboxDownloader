@@ -1,12 +1,15 @@
 {
-  "name": "terabox-gui",
+  "name": "terabox-downloader",
   "version": "1.0.0",
-  "description": "A clean and modern GUI downloader for Terabox - by codex67_cm",
+  "description": "A reliable, lightweight CLI downloader for Terabox using Google Chrome - by codex67_cm",
   "author": "codex67_cm",
   "license": "MIT",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "node downloader.js",
+    "chrome": "node scripts/start_chrome.js",
+    "test": "node tests/suite.js",
+    "gui": "electron .",
     "dist": "electron-builder"
   },
   "dependencies": {
